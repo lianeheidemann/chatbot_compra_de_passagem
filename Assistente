@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agencia de Turismo</title>
+    <title>Agência de Turismo</title>
+
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
+        * {
             box-sizing: border-box;
-            background-image: url('pattern.jpg');
-            background-repeat: repeat;
-            padding: 90px ;
         }
 
-        .containers {
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('pattern.jpg');
+            background-repeat: repeat;
+            padding: 90px;
+        }
+
+        .container {
             max-width: 520px;
             margin: 15px auto;
-            background-color: #ffffff;
+            background-color: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -25,32 +29,41 @@
 
         #input-box {
             height: 250px;
-            overflow-y: scroll;
+            overflow-y: auto;
             border: 1px solid #6e2626;
             padding: 10px;
             margin-bottom: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .mensagem {
+            margin: 8px 0;
+            font-size: 16px;
+            word-wrap: break-word;
         }
 
         #input-texto {
             width: 100%;
             padding: 8px;
-            box-sizing: border-box;
             border: 1px solid #6e2626;
+            font-size: 16px;
         }
 
         #botao-enviar {
             width: 100%;
             padding: 10px;
-            margin: 15px auto;
+            margin-top: 15px;
             background-color: #4ca7af;
-            color: #fff;
+            color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
 
         #box-final {
-            height: 150px;
+            min-height: 150px;
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #6e2626;
@@ -59,136 +72,167 @@
         }
     </style>
 </head>
+
 <body>
 
+    <div class="container">
+        <h2>Agência de Turismo</h2>
 
+        <div id="input-box"></div>
 
+        <input 
+            type="text" 
+            id="input-texto" 
+            placeholder="Digite sua resposta..."
+        >
 
-
-
-
-
-<div class="containers">
-    <h2>Agência de Turismo</h2>
-    <div id="input-box"></div>
-    <input type="text" id="input-texto" placeholder="Digite sua resposta...">
-    <button id="botao-enviar" onclick="clicaNoBotao()">Enviar</button>
-</div>
-
-<div class="containers">
-    <b><text>Opções Escolhidas:</text></b>
-    <div id="box-final">
-        <ul id="listaResponsiva"></ul>
+        <button id="botao-enviar" onclick="clicarNoBotao()">
+            Enviar
+        </button>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <div class="container">
+        <b>Opções Escolhidas:</b>
 
+        <div id="box-final">
+            <ul id="listaResponsiva"></ul>
+        </div>
+    </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script>
+        const boxInput = document.getElementById('input-box');
+        const inputResposta = document.getElementById('input-texto');
+        const botaoEnviar = document.getElementById('botao-enviar');
+        const listaExibida = document.getElementById('listaResponsiva');
 
+        const listaDeRespostas = [];
 
+        const listaPerguntas = [
+            "Qual país você deseja visitar?",
+            "Para quantas pessoas você gostaria de comprar as passagens?",
+            "Qual tipo de assento você prefere no avião? (Normal, Standard, Premium ou Executivo)",
+            "Em qual dia da semana você gostaria de realizar a viagem?",
+            "Gostaria de adquirir nossos pacotes de passeios?"
+        ];
 
+        const palavrasChave = [
+            ["alemanha", "russia", "turquia", "grecia"],
+            ["uma", "duas", "três", "1", "2", "3"],
+            ["normal", "standard", "premium", "executivo", "vip"],
+            ["segunda", "terça", "quarta", "quinta", "sexta", "sabado", "domingo"],
+            ["sim", "não", "talvez", "decidindo", "quero"]
+        ];
 
+        const listaTopicos = [
+            "País de Destino:",
+            "Número de Passageiros:",
+            "Tipo de Assentos:",
+            "Dia da Viagem:",
+            "Pacotes de Passeios:"
+        ];
 
-<script>
-    const boxInput = document.getElementById('input-box')
-    const inputResposta = document.getElementById('input-texto')
-    const botaoEnviar = document.getElementById('botao-enviar');
-    const boxDeRespostasFinal = document.getElementById('box-final')
-    const boxInputRespostas = document.getElementById('listaResponsiva')
-    const listaDeRespostas = []
+        let contadorPerguntas = 0;
+        let contadorRespostas = 0;
 
-    const listaPerguntas = ["Qual país você deseja visitar?",
-                            "Para quantas pessoas você gostaria de comprar as passagens?",
-                            "Qual tipo de assento você prefere no avião? (Opções: Normal, Standard, Premium, Executivo)",
-                            "Em qual dia da semana você gostaria de realizar a viagem?",
-                            "Gostaria de adquirir nossos pacotes de passeios?"]
-    
-    const arrayPalavrasChave =  [["alemanha", "russia", "turquia", "grecia"], //CRIAR CAMINHOS ENTRE AS OPÇÕES SELECIONADAS
-                                 ["uma", "duas", "três", "1", "2", "3"],
-                                 ["normal", "standard", "premium", "executivo", "vip"],
-                                 ["segunda", "terça", "quarta", "quinta", "sexta", "sabado", "domingo"],
-                                 ["sim", "não", "talvez", "decidindo", "quero"]]
+        function adicionarTexto(mensagem) {
+            const texto = document.createElement('div');
 
-    const listaTopicos = ["País de Destino: ","Numero de Passageiros: ",
-                          "Tipo de Assentos: ","Mês da Viagem: ",
-                          "Pacotes de passeios: "]
+            texto.classList.add('mensagem');
 
-    let countPerg = 0
-    let countResp = 0
+            texto.innerHTML = mensagem;
 
-    function exibirPergunta() {
-        adicionarTexto(`<br>Agência: ${listaPerguntas[countPerg]}`)
-        countPerg++
-    }
+            boxInput.appendChild(texto);
 
-    function exibirResposta(resposta) {
-        adicionarTexto(resposta)
-    }
-    
-    // Função utilizada dentro das duas funções anteriores
-    // Ela exibe perguntas e respostas dentro do 'boxChatboat'
-    function adicionarTexto(mensagem) {
-        const texto = document.createElement('div')
-        texto.innerHTML = mensagem
-        boxInput.appendChild(texto)
-    }
+            boxInput.scrollTop = boxInput.scrollHeight;
+        }
 
-    //SISTEMA BASEADO EM CONHECIMENTO
-    //ASSISTENTE PARA COMPRA DE PASSAGEM
-    //USAR UM .split pra DIVIDIR varer uma palavra numa string ////// EDITAR P/ GITHUB
-    //.LOWERCASER PARA SIMPLIFICAR PARA O .FUZZIMATCH
-    //.fuzzymatch // BIBLIOTECA //TRABALHA COM A APROXIMAÇAO DE PALAVRAS
-    //LINGUAGEM NA
-    function clicaNoBotao() {
-        const inputAtualDaResposta = inputResposta.value // Pega a resposta
-        exibirResposta('- ' + `${inputAtualDaResposta}`) 
-        inputResposta.value = ''
-        
-        // Se a verificação retornar 'True', continua perguntando
-        if(arrayPalavrasChave[countResp].includes(inputAtualDaResposta)) 
-        {
-            listaDeRespostas.push(`<b>${listaTopicos[countResp]}</b> ${inputAtualDaResposta}`);
-            countResp++
+        function exibirPergunta() {
+            adicionarTexto(
+                `<strong>Agência:</strong> ${listaPerguntas[contadorPerguntas]}`
+            );
 
-            if (countPerg < listaPerguntas.length) {
-                exibirPergunta();
-            } else { 
-                encerraChatboat()
+            contadorPerguntas++;
+        }
+
+        function exibirResposta(resposta) {
+            adicionarTexto(`- ${resposta}`);
+        }
+
+        function clicarNoBotao() {
+
+            const respostaAtual = inputResposta.value
+                .toLowerCase()
+                .trim();
+
+            if (respostaAtual === '') {
+                return;
+            }
+
+            exibirResposta(respostaAtual);
+
+            inputResposta.value = '';
+
+            if (
+                palavrasChave[contadorRespostas]
+                .includes(respostaAtual)
+            ) {
+
+                listaDeRespostas.push(
+                    `<b>${listaTopicos[contadorRespostas]}</b> ${respostaAtual}`
+                );
+
+                contadorRespostas++;
+
+                if (contadorPerguntas < listaPerguntas.length) {
+
+                    exibirPergunta();
+
+                } else {
+
+                    encerrarChatbot();
+                }
+
+            } else {
+
+                adicionarTexto(
+                    `<strong>Agência:</strong> Desculpe, não entendi. Poderia reformular sua resposta?`
+                );
             }
         }
-        else
-        {
-            adicionarTexto(`Agência: Desculpe, não entendi. Poderia reformular sua resposta?`) 
-        }
-    }
 
-    function mensagemPopup() {
-        Swal.fire({
-            title: 'Tudo Pronto!',
-            text: 'Você ira receber o retorno de um de nossos agentes de viagem no prazo de 1 ou 2 dias.',
-            icon: 'success',
-            confirmButtonText: 'OK'
-        })
-    }
+        function mensagemPopup() {
 
-    function encerraChatboat() {
-        const listaExibida = document.getElementById('listaResponsiva')
-        listaExibida.innerHTML = ''
-        for (const resp of listaDeRespostas) {
-           listaExibida.innerHTML += `<p>${resp}</p>`
+            Swal.fire({
+                title: 'Tudo Pronto!',
+                text: 'Você irá receber o retorno de um de nossos agentes de viagem no prazo de 1 ou 2 dias.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
         }
 
-        mensagemPopup()
-        botaoEnviar.disabled = true;
-        botaoEnviar.style.backgroundColor = '#86acaf' 
-    }
+        function encerrarChatbot() {
 
-    // chamada para exibir a primeira pergunta no inicio do boxChatboat
-    exibirPergunta()
+            listaExibida.innerHTML = '';
 
-</script>
+            for (const resposta of listaDeRespostas) {
+
+                listaExibida.innerHTML += `
+                    <p>${resposta}</p>
+                `;
+            }
+
+            mensagemPopup();
+
+            botaoEnviar.disabled = true;
+
+            botaoEnviar.style.backgroundColor = '#86acaf';
+        }
+
+        exibirPergunta();
+    </script>
 
 </body>
+
 </html>
